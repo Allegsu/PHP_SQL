@@ -1,70 +1,82 @@
-html, body{
+html {
+    height: auto;
     margin: 0;
     padding: 0;
-    height: auto;
 }
 body{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 100vh;
     background-image: linear-gradient(to bottom , #47084b 23%, #000 95%);
 }
-.wrapper{
-    display: flex;
-    flex-direction: column;
+.main{
+    justify-content: center;
     align-items: center;
-    gap: 20px;
+    display: flex;
+} 
+.background-container{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-image: url('/images/desktop-bg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: 
+    blur(0.5px)
+    contrast(1.1);
 }
-form{
-    background-color: rgba(255, 255, 255, 0.5);
-    padding: 20px;
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 600px;
+.background-container::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: -1;
 }
-
+.sql-container{
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    color:white;
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px  rgba(0, 0, 0, 0.6);
+    width: 300px;
+    text-align: center;
+    z-index: 1;
+}
 textarea{
     width: 100%;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    resize: none;
-    font-family: monospace;
-    font-size: 14px;
-}
-
-form button{
-    margin-top: 10px;
-    width: 100px;
     border-radius: 20px;
-    background-color: #000;
-    color: white;
+    line-height: normal;
+    text-align: left;
+    resize: none;
+}
+form button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 40px;
+    width: 150px;
     border: none;
-    padding: 8px 12px;
-    cursor: pointer;
+    background-color: transparent;
+    color: white; 
 }
-pre, p {
-    color: white;
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 600px;
-    word-wrap: break-word;
+form button svg {
+    transform: rotate(0deg);
+    transform-origin: center;
+    transition: transform 0.4s ease;
+    width: 40px;
 }
-.output {
-    margin-top: 20px;
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 15px;
-    border-radius: 12px;
-    max-width: 600px;
-    color: #fff;
-    font-family: monospace;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+form button:hover svg{
+    transform: rotate(360deg);
+}
+form textarea::placeholder {
+    color: rgba(104, 4, 4, 0.814);
+    text-align: center;
 }
