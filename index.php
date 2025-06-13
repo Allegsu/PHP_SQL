@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
+
 $host = 'localhost';
 $user = 'yor_forger';
 $pass = '1234';
@@ -20,12 +22,12 @@ $result = $conn->query("SHOW TABLES");
 while ($row = $result->fetch_row()) {
     $tables[] = $row[0];
 }
-
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selectedTable = $_POST['table_name'] ?? '';
     $searchQuery = trim($_POST['search_query'] ?? '');
-
+    
     if ($selectedTable !== '') {
         $likeClause = "";
         if ($searchQuery !== '') {
@@ -76,6 +78,15 @@ foreach ($tables as $tbl) {
 $feedback = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+
+    if ($action === 'insert') {
+    if (in_array('', array_map(fn($c) => $_POST["new_$c"] ?? '', $columns), true)) {
+        $feedback = "⚠️ Some values are empty!";
+    }
+
+    // continues...
+}
+
     $selectedTable = $_POST['table_name'] ?? '';
     $searchQuery = trim($_POST['search_query'] ?? '');
 
@@ -205,6 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </header>
 <div class="main">
+    <?php if (!empty($feedback)): ?>
+        <div class="popup-message"><?= $feedback ?></div>
+    <?php endif; ?>
     <div class="search-bar">
         <form method="post">
                 <label for="table_name"></label>
