@@ -72,6 +72,120 @@ foreach ($tables as $tbl) {
     $selected = ($tbl === $selectedTable) ? 'selected' : '';
     $tableOptions .= "<option value=\"$tbl\" $selected>$tbl</option>";
 }
+
+$feedback = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    $selectedTable = $_POST['table_name'] ?? '';
+    $searchQuery = trim($_POST['search_query'] ?? '');
+
+    if ($selectedTable !== '') {
+        // Get columns
+        $columnsResult = $conn->query("SHOW COLUMNS FROM `$selectedTable`");
+        $columns = [];
+        while ($col = $columnsResult->fetch_assoc()) {
+            $columns[] = $col['Field'];
+        }
+
+        if ($action === 'insert') {
+            $insertValues = [];
+            foreach ($columns as $col) {
+                $value = $conn->real_escape_string($_POST["new_$col"] ?? '');
+                $insertValues[] = "'$value'";
+            }
+            $insertCols = implode(',', array_map(fn($c) => "`$c`", $columns));
+            $insertVals = implode(',', $insertValues);
+            $conn->query("INSERT INTO `$selectedTable` ($insertCols) VALUES ($insertVals)");
+            $feedback = "✅ New row inserted.";
+        }
+
+        if ($action === 'update' && isset($_POST['row_data'])) {
+            foreach ($_POST['row_data'] as $rowIndex => $rowValues) {
+                $setParts = [];
+                foreach ($columns as $col) {
+                    $val = $conn->real_escape_string($rowValues[$col]);
+                    $setParts[] = "`$col` = '$val'";
+                }
+                // Assuming the first column is the PRIMARY KEY
+                $pkCol = $columns[0];
+                $pkVal = $conn->real_escape_string($rowValues[$pkCol]);
+                $conn->query("UPDATE `$selectedTable` SET " . implode(',', $setParts) . " WHERE `$pkCol` = '$pkVal'");
+            }
+            $feedback = "✅ Rows updated.";
+        }
+
+        if ($action === 'delete' && isset($_POST['delete_keys'])) {
+            $pkCol = $columns[0];
+            foreach ($_POST['delete_keys'] as $pkVal) {
+                $safeVal = $conn->real_escape_string($pkVal);
+                $conn->query("DELETE FROM `$selectedTable` WHERE `$pkCol` = '$safeVal'");
+            }
+            $feedback = "🗑️ Rows deleted.";
+        }
+
+        // Fetch data again
+        $likeClause = "";
+        if ($searchQuery !== '') {
+            $likeParts = array_map(function ($col) use ($conn, $searchQuery) {
+                $safeQuery = $conn->real_escape_string($searchQuery);
+                return "`$col` LIKE '%$safeQuery%'";
+            }, $columns);
+            $likeClause = "WHERE " . implode(" OR ", $likeParts);
+        }
+
+        $query = "SELECT * FROM `$selectedTable` $likeClause";
+        $result = $conn->query($query);
+
+        // Render table
+        if ($result && $result->num_rows > 0) {
+            $tableData = "<form method='post'><input type='hidden' name='table_name' value='$selectedTable'>";
+            $tableData .= "<thead><tr>";
+            $tableData .= "<th>Select</th>";
+            foreach ($columns as $col) {
+                $tableData .= "<th>" . htmlspecialchars($col) . "</th>";
+            }
+            $tableData .= "</tr></thead><tbody>";
+
+            while ($row = $result->fetch_assoc()) {
+                $tableData .= "<tr>";
+                $pk = $row[$columns[0]];
+                $tableData .= "<td><input type='checkbox' name='delete_keys[]' value='" . htmlspecialchars($pk) . "'></td>";
+                foreach ($columns as $col) {
+                    $value = htmlspecialchars($row[$col]);
+                    $tableData .= "<td><input name='row_data[$pk][$col]' value='$value'></td>";
+                }
+                $tableData .= "</tr>";
+            }
+
+            // Insert Row
+            $tableData .= "<tr><td>➕</td>";
+            foreach ($columns as $col) {
+                $tableData .= "<td><input name='new_$col' placeholder='$col'></td>";
+            }
+            $tableData .= "</tr>";
+
+            $tableData .= "</tbody><tfoot><tr><td colspan='" . (count($columns) + 1) . "'>";
+            $tableData .= '
+            <div class="button-container">
+                <button class="Button-UI" type="submit" name="action" value="update">
+                    <img class="Button-Image" src="/images/update.png" />
+                    <span>Update</span>
+                </button>
+                <button class="Button-UI" type="submit" name="action" value="insert">
+                    <img class="Button-Image" src="/images/add.png" />
+                    <span>Insert</span>
+                </button>
+                <button class="Button-UI" type="submit" name="action" value="delete">
+                    <img class="Button-Image-Del" src="/images/delete.png" />
+                    <span>Delete</span>
+                </button>
+            </div>';
+            $tableData .= "</td></tr></tfoot></form>";
+        } else {
+            $tableData = "<thead><tr><th>No results found.</th></tr></thead>";
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -110,20 +224,6 @@ foreach ($tables as $tbl) {
         <table class="items-table">
             <?= $tableData ?>
         </table>
-    </div>
-    <div class="button-container">
-        <button class="Button-UI">
-            <svg class="my-icon" fill="#ffffff" width="64px" height="64px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="update-alt" class="icon glyph"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M12,3A9,9,0,0,0,6,5.32V3A1,1,0,0,0,4,3V8a1,1,0,0,0,.92,1H10a1,1,0,0,0,0-2H7.11A7,7,0,0,1,19,12a1,1,0,0,0,2,0A9,9,0,0,0,12,3Z"></path><path d="M19.08,15H14a1,1,0,0,0,0,2h2.89A7,7,0,0,1,5,12a1,1,0,0,0-2,0,9,9,0,0,0,15,6.68V21a1,1,0,0,0,2,0V16A1,1,0,0,0,19.08,15Z"></path></g></svg>
-            <span>Update</span>
-        </button>
-        <button class="Button-UI">
-            <svg class="my-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#ffffff" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g id="Complete"> <g data-name="add" id="add-2"> <g> <line fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="12" x2="12" y1="19" y2="5"></line> <line fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="5" x2="19" y1="12" y2="12"></line> </g> </g> </g> </g></svg>
-            <span>Insert</span>
-        </button>
-        <button class="Button-UI">
-            <svg class="my-icon" fill="#ffffff" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="m 11.324219,3.07539 -1.21875,1.21875 0.621093,0.6211 c 0.220313,0.22031 0.220313,0.57656 0,0.79453 L 10.31875,6.11758 C 10.595313,6.7293 10.75,7.40899 10.75,8.12383 c 0,2.69297 -2.1820313,4.875 -4.875,4.875 C 3.1820313,12.99883 1,10.81914 1,8.12617 c 0,-2.69296 2.1820312,-4.875 4.875,-4.875 0.7148437,0 1.3945312,0.15469 2.00625,0.43125 L 8.2890625,3.27461 C 8.509375,3.0543 8.865625,3.0543 9.0835937,3.27461 L 9.7046875,3.8957 10.923438,2.67695 11.324219,3.07539 Z m 1.394531,-0.66797 -0.5625,0 c -0.154688,0 -0.28125,0.12657 -0.28125,0.28125 0,0.15469 0.126562,0.28125 0.28125,0.28125 l 0.5625,0 C 12.873438,2.96992 13,2.84336 13,2.68867 13,2.53399 12.873438,2.40742 12.71875,2.40742 Z M 11.3125,1.00117 c -0.154688,0 -0.28125,0.12657 -0.28125,0.28125 l 0,0.5625 c 0,0.15469 0.126562,0.28125 0.28125,0.28125 0.154688,0 0.28125,-0.12656 0.28125,-0.28125 l 0,-0.5625 c 0,-0.15468 -0.126562,-0.28125 -0.28125,-0.28125 z m 0.794531,1.28907 0.398438,-0.39844 c 0.110156,-0.11016 0.110156,-0.28828 0,-0.39844 -0.110157,-0.11016 -0.288281,-0.11016 -0.398438,0 L 11.708594,1.8918 c -0.110157,0.11015 -0.110157,0.28828 0,0.39844 0.1125,0.11015 0.290625,0.11015 0.398437,0 z m -1.589062,0 c 0.110156,0.11015 0.288281,0.11015 0.398437,0 0.110156,-0.11016 0.110156,-0.28829 0,-0.39844 L 10.517969,1.49336 c -0.110156,-0.11016 -0.288281,-0.11016 -0.398438,0 -0.110156,0.11016 -0.110156,0.28828 0,0.39844 l 0.398438,0.39844 z m 1.589062,0.79687 c -0.110156,-0.11016 -0.288281,-0.11016 -0.398437,0 -0.110157,0.11016 -0.110157,0.28828 0,0.39844 l 0.398437,0.39844 c 0.110157,0.11015 0.288281,0.11015 0.398438,0 0.110156,-0.11016 0.110156,-0.28829 0,-0.39844 L 12.107031,3.08711 Z M 3.625,7.37617 c 0,-0.82734 0.6726562,-1.5 1.5,-1.5 0.20625,0 0.375,-0.16875 0.375,-0.375 0,-0.20625 -0.16875,-0.375 -0.375,-0.375 -1.2398438,0 -2.25,1.01016 -2.25,2.25 0,0.20625 0.16875,0.375 0.375,0.375 0.20625,0 0.375,-0.16875 0.375,-0.375 z"></path></g></svg>
-            <span>Delete</span>
-        </button>
     </div>
 </div>
    <footer class="footer-container">
