@@ -22,7 +22,6 @@ $result = $conn->query("SHOW TABLES");
 while ($row = $result->fetch_row()) {
     $tables[] = $row[0];
 }
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selectedTable = $_POST['table_name'] ?? '';
@@ -80,9 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'insert') {
-    if (in_array('', array_map(fn($c) => $_POST["new_$c"] ?? '', $columns), true)) {
-        $feedback = "⚠️ Some values are empty!";
-    }
+
 
     // continues...
 }
