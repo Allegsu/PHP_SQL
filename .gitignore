@@ -1,2 +1,4 @@
 .DS_Store
 .env
+css/main.css
+main.php
