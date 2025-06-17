@@ -17,22 +17,19 @@ The design takes inspiration from <strong>anime aesthetics</strong>, but it can 
 
 ## Design of the Page
 
-<p align="center">
-    <img src="./images/preview_db.png" alt="page-previw" title="Dark-Sunset-v.1" width="400" />
-</p>
+<a>
+    <img src="./images/preview_db.png" alt="logo" align="center" width="800"/>
+</a>
 
 | ⚠️  Version # | Description |
 | --- | --- |
 |  v.1  | Dark-Sunset (release) |
 
-
-<div style="display: flex; align-items: center; justify-content: space-between;">
+<a>
+    <img src="./images/apple.png" alt="logo" align="right" width="40"/>
+</a>
 
 ### How to connect - Apple
-
-<img src="./images/apple.png" alt="apple-logo" width="40"/>
-</div>
-
 
 | Steps | Command | Shell  |
 | :--- |:---| :---:|
@@ -52,12 +49,11 @@ The design takes inspiration from <strong>anime aesthetics</strong>, but it can 
 
 ### Final step:  Dump your existing database or create a new database
 
-<div style="display: flex; align-items: center; justify-content: space-between;">
+<a>
+    <img src="./images/windows.png" alt="logo" align="right" width="40"/>
+</a>
 
 ### How to connect - Windows
-
-<img src="./images/windows.png" alt="apple-logo" width="40"/>
-</div>
 
 | Steps | Commmand | Description |
 | :--- | :--- | :---: |
@@ -81,21 +77,19 @@ The design takes inspiration from <strong>anime aesthetics</strong>, but it can 
 >>> Don't forget to add it to the path
 
 
-<div style="display: flex; align-items: center; justify-content: space-between;">
-
 ### VS Code Extensions
 
-<img src="./images/vscode.png" alt="apple-logo" width="40"/>
-</div>
+<a>
+    <img src="./images/vscode.png" alt="logo" align="right" width="40"/>
+</a>
+
 
 - PHP Intelephense - Ben Mewburn
 - PHP Server - brapifra
 
-<div style="display: flex; align-items: center; justify-content: space-between;">
 
 ### Developer:
 
 <img src="./images/dev-img.png" alt="dev-logo" width="50"/>
-</div>
 
 > 알렉스 - Allegsu
