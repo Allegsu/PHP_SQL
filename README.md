@@ -12,7 +12,6 @@ The goal of this page is to provide a practical interface for interacting with a
 | Insert | Insert new records in a table. |
 | Update | Modify the existing records in a table. |
 | Delete | Delete existing records in a table. |
-| | |
 
 The design takes inspiration from <strong>anime aesthetics</strong>, but it can easily be customized with CSS to match any desired style. 
 
@@ -24,7 +23,7 @@ The design takes inspiration from <strong>anime aesthetics</strong>, but it can 
 
 | ⚠️  Version # | Description |
 | --- | --- |
-|  v.1  | Dark-Sunset (realease) |
+|  v.1  | Dark-Sunset (release) |
 
 
 <div style="display: flex; align-items: center; justify-content: space-between;">
